@@ -227,7 +227,7 @@ behaviours: [
     {
         type: 'magnet'
         mdipole: (pos) => {return vec(pos.x, 0).setMag(1)},
-        mdipoleDependencies = ['pos']
+        mdipoleDependencies: ['pos']
     }
 ]
 
@@ -251,8 +251,7 @@ for (const behaviour of behaviours) {
         let behaviourName = behaviour.type;
         let factoryName = "create"+behaviourName.charAt(0).toUpperCase()+behaviourName.slice(1);
         self.physics[behaviourName] = executeFunctionByName(factoryName, window, self, ...Object.values(behaviour).slice(1));
-    }
-    let behaviourKeys = Object.keys(self.physics);
+}
 ```
 
 where `executeFunctionByName` uses the `window` object as a context in wich to find `create<Type>` (`factoryName` above), and it can be found in the helpers.js file:

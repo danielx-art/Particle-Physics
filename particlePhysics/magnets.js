@@ -1,25 +1,31 @@
 /*BEHAVIOURS*/
 
 const createMagnet = (
-    //default params
-    m = createVector(),
-    body
+    particle,
+    mdipole,
+    mdipoleDependencies
     ) => {
 
-    body.dir.copy(m).setMag(1);
+    if (mdipole instanceof Function) {
+        let args = mdipoleDependencies.map((dependency)=>particle[dependency]);
+        let calculated_m = mdipole(...args);
+        mdipole = calculated_m;
+    }
+
+    particle.dir = vec().copy(mdipole).setMag(1);
 
     const self = {
         
-        kind: 'magnet',
-        m,
-        body,
+        type: 'magnet',
+        m: mdipole,
+        particle,
 
-        field: (x=0,y=0, z=0) => {
-            let vecr = createVector(x - body.pos.x, y-body.pos.y, z-body.pos.z);
-            let versorr = createVector().copy(vecr).setMag(1);
+        field: (pointInSpace) => {
+            let vecr = vec().copy(pointInSpace).sub(particle.pos)
+            let versorr = vec().copy(vecr).setMag(1);
             let r = vecr.mag();
             if(r > 1) { //security measure
-                let B = createVector().copy(versorr);
+                let B = vec().copy(versorr);
                 B.mult(3*( m.dot(versorr) ));
                 B.sub(m);
                 B.div(r*r*r);
@@ -36,18 +42,18 @@ const createMagnet = (
 
             agents.forEach(function(agent, i){
 
-                if(!agent[self.kind]){
+                if(!agent.physics.magnet){
                     return;
                 }
 
-                let B = agent.magnet.field(body.pos.x, body.pos.y, body.pos.z);
+                let B = agent.magnet.field(particle.pos);
 
                 //translation, force
                 //approximation of partial derivatives
                 let dinf = 0.000000001;
-                let Bx = agent.magnet.field(body.pos.x + dinf, body.pos.y, body.pos.z).sub(B).div(dinf).mult(m.x);
-                let By = agent.magnet.field(body.pos.x, body.pos.y + dinf, body.pos.z).sub(B).div(dinf).mult(m.y);
-                let Bz = agent.magnet.field(body.pos.x, body.pos.y, body.pos.z + dinf).sub(B).div(dinf).mult(m.z);
+                let Bx = agent.magnet.field(vec(particle.pos.x + dinf, particle.pos.y, particle.pos.z)).sub(B).div(dinf).mult(m.x);
+                let By = agent.magnet.field(vec(particle.pos.x, particle.pos.y + dinf, particle.pos.z)).sub(B).div(dinf).mult(m.y);
+                let Bz = agent.magnet.field(vec(particle.pos.x, particle.pos.y, particle.pos.z + dinf)).sub(B).div(dinf).mult(m.z);
                 let Fmag = Bx.add(By).add(Bz);
                 Fmagres.add(Fmag);
 
@@ -55,37 +61,21 @@ const createMagnet = (
                 Tmagres.add(m.cross(B));
             });
 
-            body.acl.add(Fmagres.div(body.inertialMass));
-            body.angacl.add(Tmagres.div(body.momentInercia));
+            particle.acl.add(Fmagres.div(particle.inertialMass));
+            particle.angacl.add(Tmagres.div(particle.momentInercia));
         },
 
-        takenote: (newbody) => {
+        hasMoved: (newState) => {
             let mmag = m.mag();
-            m.copy(newbody.dir).setMag(mmag);
+            m.copy(newState.dir).setMag(mmag);
         },
 
         merge: (otherMagnet) => {
-            // let m2 = vec().copy(otherMagnet.m);
-            // m.add(m2);
+            let m2 = vec().copy(otherMagnet.m);
+            m.add(m2);
         }
     };
 
     return self;
 
 };
-
-const magnet = (newM) => {
-
-    const self = {
-        kind: "magnet",
-        create: createMagnet,
-    };
-
-    if(Array.isArray(newM)){
-        self['m'] = newM[1](newM[0]);
-    } else {
-        self['m'] = newM;
-    }
-
-    return self;
-}
