@@ -32,7 +32,13 @@ const createParticle = function(
         }
     ],
     
-    display = 'true'
+    display = {
+        scale: 10, 
+        displayFunction: (p5instance, pos, radius) => {
+            p5instance.ellipse(pos.x, pos.y, radius, radius);
+        },
+        dependencies: ["pos", "display.scale"]
+    }
 
 ) {
 
@@ -41,9 +47,7 @@ const createParticle = function(
         dir: direction,
         inertialMass,
         momentInercia,
-
         movement,
-
         physics,
 
         //getters for x and y for quadTree
@@ -69,11 +73,11 @@ const createParticle = function(
     //the engine behind the dynamic type
     if(self.movement == 'dynamic'){
         //translation
-        self.vel = createVector();
-        self.acl = createVector();
+        self.vel = vec();
+        self.acl = vec();
         //rotation        
-        self.angvel = createVector();
-        self.angacl = createVector();
+        self.angvel = vec();
+        self.angacl = vec();
         
         self.applyForces = (agents) => { //implement if i only want to select one or more behaviour phenomenon
             for(const f of behaviourKeys){
@@ -112,7 +116,7 @@ const createParticle = function(
             
             //notify all behaviours
             for(const f of behaviourKeys){
-                self[f].takenote(self); //debugg <- here is the problem
+                self[f].hasMoved(self);
             }
         }
 
@@ -159,6 +163,11 @@ const createParticle = function(
             //console.log(self); //debugg
         }
     }
+
+    let displayDependencies = display.dependencies.map((item) => {
+        //item can be stuff like display.scale so we have to split of '.' and nest eah one like particle['display']['scale']
+        particle[item]
+    })
 
     self['display'] = (p5inst, dirVector) => {
         p5inst.noStroke();

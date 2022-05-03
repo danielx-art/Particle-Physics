@@ -1,207 +1,107 @@
-// Daniel Shiffman
-// http://codingtra.in
-// http://patreon.com/codingtrain
+const quadTree = function(boundary, capacity) {
 
-// QuadTree
-// https://www.youtube.com/watch?v=z0YFFg_nBjw
-
-// For more:
-// https://github.com/CodingTrain/QuadTree
-
-class Point {
-    constructor(x, y, userData) {
-      this.x = x;
-      this.y = y;
-      this.userData = userData;
-    }
-}
-  
-class Rectangle {
-    constructor(x, y, w, h) {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
-        this.width = w;
-        this.height = h;
-    }
-
-    contains(point) {
-        return (
-        point.x >= this.x - this.w &&
-        point.x <= this.x + this.w &&
-        point.y >= this.y - this.h &&
-        point.y <= this.y + this.h
-        );
-    }
-
-    intersects(range) {
-        return !(
-        range.x - range.w > this.x + this.w ||
-        range.x + range.w < this.x - this.w ||
-        range.y - range.h > this.y + this.h ||
-        range.y + range.h < this.y - this.h
-        );
-    }
-}
-
-// circle class for a circle shaped query
-class Circle {
-    constructor(x, y, r) {
-        this.x = x;
-        this.y = y;
-        this.r = r;
-        this.rSquared = this.r * this.r;
-    }
-
-    contains(point) {
-        // check if the point is in the circle by checking if the euclidean distance of
-        // the point and the center of the circle if smaller or equal to the radius of
-        // the circle
-        let d = Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2);
-        return d <= this.rSquared;
-    }
-
-    intersects(range) {
-        var xDist = Math.abs(range.x - this.x);
-        var yDist = Math.abs(range.y - this.y);
-
-        // radius of the circle
-        var r = this.r;
-
-        var w = range.w;
-        var h = range.h;
-
-        var edges = Math.pow(xDist - w, 2) + Math.pow(yDist - h, 2);
-
-        // no intersection
-        if (xDist > r + w || yDist > r + h) return false;
-
-        // intersection within the circle
-        if (xDist <= w || yDist <= h) return true;
-
-        // intersection on the edge of the circle
-        return edges <= this.rSquared;
-    }
-}
-
-class QuadTree {
-    constructor(boundary, capacity) {
-        if (!boundary) {
+    if (!boundary) {
         throw TypeError('boundary is null or undefined');
-        }
-        if (!(boundary instanceof Rectangle)) {
-        throw TypeError('boundary should be a Rectangle');
-        }
-        if (typeof capacity !== 'number') {
-        throw TypeError(
-            `capacity should be a number but is a ${typeof capacity}`
-        );
-        }
-        if (capacity < 1) {
+    }
+    // if (!(boundary instanceof Rectangle)) {
+    //     throw TypeError('boundary should be a Rectangle');
+    // }
+    if (typeof capacity !== 'number') {
+        throw TypeError(`capacity should be a number but is a ${typeof capacity}`);
+    }
+    if (capacity < 1) {
         throw RangeError('capacity must be greater than 0');
-        }
-        this.boundary = boundary;
-        this.capacity = capacity;
-        this.points = [];
-        this.divided = false;
     }
 
-    subdivide() {
-        let x = this.boundary.x;
-        let y = this.boundary.y;
-        let w = this.boundary.w / 2;
-        let h = this.boundary.h / 2;
+    const self = {
+        boundary,
+        capacity,
+        points: [],
+        divided: false
+    };
 
-        let ne = new Rectangle(x + w, y - h, w, h);
-        this.northeast = new QuadTree(ne, this.capacity);
-        let nw = new Rectangle(x - w, y - h, w, h);
-        this.northwest = new QuadTree(nw, this.capacity);
-        let se = new Rectangle(x + w, y + h, w, h);
-        this.southeast = new QuadTree(se, this.capacity);
-        let sw = new Rectangle(x - w, y + h, w, h);
-        this.southwest = new QuadTree(sw, this.capacity);
+    self.subdivide = function() {
+        let x = self.boundary.x;
+        let y = self.boundary.y;
+        let w = self.boundary.w / 2;
+        let h = self.boundary.h / 2;
 
-        this.divided = true;
+        let ne = rectangle(x + w, y - h, w, h);
+        self.northeast = quadTree(ne, self.capacity);
+        let nw = rectangle(x - w, y - h, w, h);
+        self.northwest = quadTree(nw, self.capacity);
+        let se = rectangle(x + w, y + h, w, h);
+        self.southeast = quadTree(se, self.capacity);
+        let sw = rectangle(x - w, y + h, w, h);
+        self.southwest = quadTree(sw, self.capacity);
+
+        self.divided = true;
     }
 
-    insert(point) {
-        if (!this.boundary.contains(point)) {
-        return false;
+    self.insert = function(point) {
+        if (!self.boundary.contains(point)) {
+            return false;
         }
 
-        if (this.points.length < this.capacity) {
-        this.points.push(point);
-        return true;
+        if (self.points.length < self.capacity) {
+            self.points.push(point);
+            return true;
         }
 
-        if (!this.divided) {
-        this.subdivide();
+        if (!self.divided) {
+            self.subdivide();
         }
 
         if (
-        this.northeast.insert(point) ||
-        this.northwest.insert(point) ||
-        this.southeast.insert(point) ||
-        this.southwest.insert(point)
+            self.northeast.insert(point) ||
+            self.northwest.insert(point) ||
+            self.southeast.insert(point) ||
+            self.southwest.insert(point)
         ) {
-        return true;
+            return true;
         }
     }
 
-    query(range, found) {
+    self.query = function(range, found) {
         if (!found) {
-        found = [];
+            found = [];
         }
 
-        if (!range.intersects(this.boundary)) {
-        return found;
+        if (!range.intersects(self.boundary)) {
+            return found;
         }
 
-        for (let p of this.points) {
+        for (let p of self.points) {
         if (range.contains(p)) {
             found.push(p);
         }
         }
-        if (this.divided) {
-        this.northwest.query(range, found);
-        this.northeast.query(range, found);
-        this.southwest.query(range, found);
-        this.southeast.query(range, found);
+        if (self.divided) {
+            self.northwest.query(range, found);
+            self.northeast.query(range, found);
+            self.southwest.query(range, found);
+            self.southeast.query(range, found);
         }
 
         return found;
     }
 
-    remove(point) {
-        let indexToRemove = this.points.indexOf(point);
+    self.remove = function(point) {
+        let indexToRemove = self.points.indexOf(point);
         if(indexToRemove> -1){
-            this.points.splice(indexToRemove,1);
+            self.points.splice(indexToRemove,1);
             return true;
         }else{
-            if(this.divided){
-                if(this.northeast.remove(point)) {return true};
-                if(this.northwest.remove(point)) {return true};
-                if(this.southeast.remove(point)) {return true};
-                if(this.southwest.remove(point)) {return true};
+            if(self.divided){
+                if(self.northeast.remove(point)) {return true};
+                if(self.northwest.remove(point)) {return true};
+                if(self.southeast.remove(point)) {return true};
+                if(self.southwest.remove(point)) {return true};
             }
         }
         return false;
     }
 
-    // remove(point) {
-    //     let indexToRemove = this.points.indexOf(point);
-    //     if(indexToRemove> -1){
-    //         this.points.splice(indexToRemove,1);
-    //     }else{
-    //         if(this.divided){
-    //             this.northeast.remove(point);
-    //             this.northwest.remove(point);
-    //             this.southeast.remove(point);
-    //             this.southwest.remove(point);
-    //         }
-    //     }
-    // }
-
+    return self;
 
 }

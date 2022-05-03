@@ -1,5 +1,3 @@
-/*BEHAVIOURS*/
-
 const createMagnet = (
     particle,
     mdipole,
