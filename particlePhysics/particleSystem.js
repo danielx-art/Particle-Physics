@@ -11,7 +11,7 @@ const createParticleSystem = function(
     inertialMass = (i)=>{return 1},
     momentInertia = (i)=>{return 1000},
 
-    movement = (i) => {return "dynamic"},
+    movement = "dynamic",
 
     initialVelocity = (i) => {return vec()},
     initialAngularVelocity = (i) => {return vec()},
@@ -23,7 +23,7 @@ const createParticleSystem = function(
 
     wrap = "torus",
 
-    collisionDetection = 'SPACE_HASH_2D',
+    collisionDetection = 'QUADTREE',
 
     queryRadius = 50,
 
@@ -47,20 +47,25 @@ const createParticleSystem = function(
 
 ) {
 
+    
+    //Initialize all the particles
     const self = {
+        num,
+        boundary,
+        movement,
+        wrap,
+        queryRadius,
+        safeRadius,
         particles: [],
     }
 
-
-    //generate particles and quadTree
     for(let i=0; i<num; i++){
         
         let newPos = (posGenerator instanceof Function ) ? posGenerator(i) : posGenerator;
         let newDir = (dirGenerator instanceof Function ) ? dirGenerator(i) : dirGenerator;
         let newInertialMass = (inertialMass instanceof Function ) ? inertialMass(i) : inertialMass;
         let newMomentInertia = (momentInertia instanceof Function ) ? momentInertia(i) : momentInertia;
-
-        let newMovement = (movement instanceof Function ) ? movement(i) : movement;
+        let newMovement = movement;
         let newVelocity = (initialVelocity instanceof Function ) ? initialVelocity(i) : initialVelocity;
         let newAngVelocity = (initialAngularVelocity instanceof Function ) ? initialAngularVelocity(i) : initialAngularVelocity;
         let newMaxForce = (maxForce instanceof Function ) ? maxForce(i) : maxForce;
@@ -89,18 +94,27 @@ const createParticleSystem = function(
         );
 
         self.particles.push(newParticle);
-        self.quadTree.insert(newParticle);
+
+        //Collision Detection
+        if(collisionDetection == 'SPACE_HASH_2D'){
+
+        }
+        if(collisionDetection == 'QUADTREE'){
+            self.collisionDetection = quadTree(boundary, 8)
+            self.collisionDetection.insert(newParticle);
+        }
     }
 
+
     //interactions
-    self['update'] = (
+    self.update = (
 
     ) => {
 
         if(movement == 'dynamic'){
             for(let i =0; i < num; i++){
-                let range = new Circle(self.particles[i].x, self.particles[i].y, queryRadius);
-                let safeRange = new Circle(self.particles[i].x, self.particles[i].y, safeRadius);
+                let range = circle(self.particles[i].x, self.particles[i].y, queryRadius);
+                let safeRange = circle(self.particles[i].x, self.particles[i].y, safeRadius);
                 let forMerge = self.quadTree.query(safeRange);
                 let inRange = self.quadTree.query(range);
                 
@@ -142,18 +156,20 @@ const createParticleSystem = function(
                 
             }
 
-            if(display){
-                for(let p of self.particles){
-                    p.body.show(s, false);
-                }
-            }
-
-            quadTree = new QuadTree(boundary, 8);
+            self.collisionDetection = quadTree(boundary, 8);
             for(let i=0; i<self.particles.length; i++){
-                quadTree.insert(self.particles[i]);
+                self.collisionDetection(self.particles[i]);
             }
         }
     };
+
+    self.display = (
+
+    ) => {
+        for(p of self.particles){
+            p.display.show();
+        }
+    }
 
     return self;
 }
