@@ -39,10 +39,10 @@ const createParticleSystem = function(
 
     display = (i) => {return {
         scale: 10, 
-        displayFunction: (p5instance, pos, radius) => {
+        displayFunction: (p5instance, radius, pos) => {
             p5instance.ellipse(pos.x, pos.y, radius, radius);
         },
-        dependencies: ["pos", "display.scale"]
+        dependencies: ["pos"]
     }},
 
 ) {

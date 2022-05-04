@@ -69,10 +69,10 @@ var sketch = function(s){
 			]},
 			display: (i) => {return {
 				scale: displayRadi, 
-				displayFunction: (s, pos, radius) => {
+				displayFunction: (s, radius, pos) => {
 					s.ellipse(pos.x, pos.y, radius, radius);
 				},
-				dependencies: ["pos", "display.scale"]
+				dependencies: ["pos"]
 			}}
 		});
 

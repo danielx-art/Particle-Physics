@@ -93,10 +93,10 @@ let p = createParticleSystem({
             //here I'll use some functionality of p5.js
             (i) => {return {
 				scale: 5, 
-				displayFunction: (s, pos, radius) => {
+				displayFunction: (s, radius, pos) => {
 					s.ellipse(pos.x, pos.y, radius, radius);
 				},
-				dependencies: ["pos", "display.scale"]
+				dependencies: ["pos"]
 			}}
 		});
 ```
@@ -144,10 +144,10 @@ const createParticleSystem = function({
 
     display = (i) => {return {
         scale: 10, 
-        displayFunction: (p5instance, pos, radius) => {
+        displayFunction: (p5instance, radius, pos) => {
             p5instance.ellipse(pos.x, pos.y, radius, radius);
         },
-        dependencies: ["pos", "display.scale"]
+        dependencies: ["pos"]
     }},
 
 
@@ -178,7 +178,7 @@ A particle is an object that can interact with other particles via its physics, 
         - a method to move
         - a method to merge with others
 
-- ### Display methods:
+- ### [Display methods](#displaying-the-particles):
 
     * to display itself
     * to display the force vector it feels
@@ -327,6 +327,6 @@ And this would be a simple gravity effect pulling down globaly (remember the y i
 
 ## Elastic (Hooke's Law)
 
-
+# Displaying the particles
 
 
