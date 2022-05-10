@@ -11,7 +11,7 @@ const createParticle = function(
     inertialMass = 1,
     momentInertia = 1000,
 
-    movement = 'static',
+    movement = "static",
 
     maxForce = 20,
 	maxSpeed = 0.1,
@@ -21,23 +21,37 @@ const createParticle = function(
 
     behaviours = [
         {
-            type: 'gravity',
+            type: "gravity",
             G: 10
         }
         ,
         {
-            type: 'magnet',
+            type: "magnet",
             mdipole: (pos) => {return vec(pos.x, 0).setMag(1)},
-            mdipoleDependencies: ['pos']
+            mdipoleDependencies: ["pos"]
         }
     ],
     
     display = {
         scale: 10, 
-        displayFunction: (p5instance, redius, pos) => {
+        displayFunction: (p5instance, radius, pos) => {
             p5instance.ellipse(pos.x, pos.y, radius, radius);
         },
-        dependencies: ["pos"]
+        displayDependencies: ["pos"],
+
+        displayForce: (p5instance, scale, pos, inertialMass, acl) => {
+            p5instance.stroke(0);
+            let aclTemp = vec().copy(acl).mult(scale/inertialMass);
+            p5instance.line(pos.x, pos.y, pos.x + aclTemp.x, pos.y + aclTemp.y)
+        },
+        displayForceDependencies: ["pos","inertialMass","acl"], //has to be in the same order than in the arguments
+
+        displayDirection: (p5instance, scale, pos, dir) => {
+            p5instance.stroke(10);
+            let dirTemp = vec().copy(dir).mult(scale);
+            p5instance.line(pos.x, pos.y, pos.x + dirTemp.x, pos.y + dirTemp.y)
+        },
+        displayDirectionDependencies: ["pos","dir"] //has to be in the same order than in the arguments
     }
 
 ) {
@@ -50,7 +64,6 @@ const createParticle = function(
         movement,
         physics,
 
-        //getters for x and y for quadTree
         get x () {
             return this.body.pos.x
         },
@@ -61,7 +74,9 @@ const createParticle = function(
 
     }
 
-    //behaviours assignment
+    /*
+    BEHAVIOURS ASSIGNMENT
+    */
     for (const behaviour of behaviours) {
         let behaviourName = behaviour.type;
         let factoryName = "create"+behaviourName.charAt(0).toUpperCase()+behaviourName.slice(1);
@@ -79,32 +94,22 @@ const createParticle = function(
         self.angvel = vec();
         self.angacl = vec();
         
-        self.applyForces = (agents) => { //implement if i only want to select one or more behaviour phenomenon
+        self.applyForces = (agents) => {
             for(const f of behaviourKeys){
                 self[f].forces(agents);
             }
         }
         
         self.move = (p5inst) => {
-            //translation
-            if(p5inst){
-                p5inst.stroke(0);
-                //let tempF = vec(self.acl.x, self.acl.y);
-                let tempF = vec().copy(self.acl);
-                //tempF.mult(1000000);
-                //tempF.limit(maxForce);
-                //console.log(tempF); //debugg
-                p5inst.stroke(0,255,0);
-                tempF.setMag(p5inst.width*0.1);
-                p5inst.line(self.pos.x, self.pos.y, self.pos.x + tempF.x, self.pos.y + tempF.y);
-                //p5inst.line(self.pos.x, self.pos.y, self.pos.x + tempF.x*100, self.pos.y + tempF.y*100);
-            }
+
+            //translation - Euler - maybe implement runge kutta 4th?
             self.vel.add(self.acl);
             self.vel.mult(translationDamping); //translation damping
             self.vel.limit(maxSpeed);
 
             self.pos.add(self.vel);
             self.acl.mult(0);
+
             //rotation
             self.angacl.limit(maxForce);
             self.angvel.add(self.angacl);
@@ -164,14 +169,16 @@ const createParticle = function(
         }
     }
 
-    //display logic - have to test
+    /*
+    DISPLAY LOGIC - YET TO TEST
+    */
     self.display = {
         scale: display.scale,
     }
 
-    self.display.show = function(p5inst){
+    self.display.show = function(args){
 
-        let displayDependencies = display.dependencies.map((item) => 
+        let displayDependencies = display.displayDependencies.map((item) => 
         {
             let thisDependency = item.split(".");
             let lastDependency = thisDependency.pop();
@@ -179,13 +186,45 @@ const createParticle = function(
             for (let i = 0; i < thisDependency.length; i++) {
                 context = context[thisDependency[i]];
             }
-            return context[displayLast];
+            return context[lastDependency];
         });
 
-        return display.displayFunction(p5inst, self.display.scale, ...displayDependencies)
+        return display.displayFunction(args, self.display.scale, ...displayDependencies)
     }
 
-    
+    self.display.force = function(args){
+
+        let displayForceDependencies = display.displayForceDependencies.map((item) => 
+        {
+            let thisDependency = item.split(".");
+            let lastDependency = thisDependency.pop();
+            let context = self;
+            for (let i = 0; i < thisDependency.length; i++) {
+                context = context[thisDependency[i]];
+            }
+            return context[lastDependency];
+        });
+
+        return display.displayForce(args, self.display.scale, ...displayForceDependencies)
+    }
+
+    self.display.direction = function(args){
+
+        let displayDirectionDependencies = display.displayDirectionDependencies.map((item) => 
+        {
+            let thisDependency = item.split(".");
+            let lastDependency = thisDependency.pop();
+            let context = self;
+            for (let i = 0; i < thisDependency.length; i++) {
+                context = context[thisDependency[i]];
+            }
+            return context[lastDependency];
+        });
+
+        return display.displayDirection(args, self.display.scale, ...displayDirectionDependencies)
+    }
+
+
     return self;
 };
 
