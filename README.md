@@ -178,11 +178,11 @@ A particle is an object that can interact with other particles via its physics, 
         - a method to move
         - a method to merge with others
 
-- ### [Display methods](#displaying-the-particles):
+- ### [Display Object](#the-display-object-and-methods):
 
-    * to display itself
-    * to display the force vector it feels
-    * to display the direction it is facing
+    * a method to display itself
+    * a method to display the force vector it feels
+    * a method to display the direction it is facing
 
 - ### [Physics object](#the-physics-of-a-particle)
 
@@ -327,6 +327,15 @@ And this would be a simple gravity effect pulling down globaly (remember the y i
 
 ## Elastic (Hooke's Law)
 
-# Displaying the particles
+# The Display Object And Methods
+
+When creating a particle or a particle system, one should specify how the particles are to be showed on the screen by a display object, wich is informed in the arguments of `createParticle()` or `createParticleSystem()`, where in the latter you could also pass a function to generate for each particle index a different display object. This object can contain a scale property, a method called displayFunction, a method called displayForce and a method called displayDirection, each one self explanatory.
+
+### Example
+
+As an argument of `createParticle()`:
+
+```javascript
 
 
+```

@@ -72,7 +72,7 @@ var sketch = function(s){
 				displayFunction: (s, radius, pos) => {
 					s.ellipse(pos.x, pos.y, radius, radius);
 				},
-				dependencies: ["pos"]
+				displayDependencies: ["pos"]
 			}}
 		});
 
