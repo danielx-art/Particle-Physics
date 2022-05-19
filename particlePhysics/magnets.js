@@ -60,7 +60,7 @@ const createMagnet = (
             });
 
             particle.acl.add(Fmagres.div(particle.inertialMass));
-            particle.angacl.add(Tmagres.div(particle.momentInercia));
+            particle.angacl.add(Tmagres.div(particle.momentInertia));
         },
 
         hasMoved: (newState) => {

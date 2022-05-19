@@ -1,4 +1,4 @@
-const createParticleSystem = function(
+const createParticleSystem = function({
     
     num = 1,
 
@@ -15,11 +15,12 @@ const createParticleSystem = function(
 
     initialVelocity = (i) => {return vec()},
     initialAngularVelocity = (i) => {return vec()},
-    maxForce = (i)=>{return 1},
-    maxSpeed = (i)=>{return 0.5},
-    maxAngVel = (i)=>{return 0.5},
-    translationDamping = (i)=>{return 1},
-    rotationDamping = (i)=>{return 1},
+    maxForce = (i)=>{return 10},
+    maxTorque = (i)=>{return 0.5},
+    maxSpeed = (i)=>{return 0.1},
+    maxAngVel = (i)=>{return 0.1},
+    translationDamping = (i)=>{return 0},
+    rotationDamping = (i)=>{return 0},
 
     wrap = "torus",
 
@@ -29,7 +30,7 @@ const createParticleSystem = function(
 
     safeRadius = 5,
 
-    merge = true,
+    merge = false,
 
     behaviours = (i) => {return [{
         type: 'externalForce',
@@ -61,9 +62,8 @@ const createParticleSystem = function(
         }
     },
 
-) {
+}={}) {
 
-    
     //Initialize all the particles
     const self = {
         num,
@@ -77,37 +77,28 @@ const createParticleSystem = function(
 
     for(let i=0; i<num; i++){
         
-        let newPos = (posGenerator instanceof Function ) ? posGenerator(i) : posGenerator;
-        let newDir = (dirGenerator instanceof Function ) ? dirGenerator(i) : dirGenerator;
-        let newInertialMass = (inertialMass instanceof Function ) ? inertialMass(i) : inertialMass;
-        let newMomentInertia = (momentInertia instanceof Function ) ? momentInertia(i) : momentInertia;
-        let newMovement = movement;
-        let newVelocity = (initialVelocity instanceof Function ) ? initialVelocity(i) : initialVelocity;
-        let newAngVelocity = (initialAngularVelocity instanceof Function ) ? initialAngularVelocity(i) : initialAngularVelocity;
-        let newMaxForce = (maxForce instanceof Function ) ? maxForce(i) : maxForce;
-        let newMaxSpeed = (maxSpeed instanceof Function ) ? maxSpeed(i) : maxSpeed;
-        let newMaxAngVel = (maxAngVel instanceof Function ) ? maxAngVel(i) : maxAngVel;
-        let newTranslationDamping = (translationDamping instanceof Function ) ? translationDamping(i) : translationDamping;
-        let newRotationDamping = (rotationDamping instanceof Function ) ? rotationDamping(i) : rotationDamping;
-        let newBehaviours = (behaviours instanceof Function ) ? behaviours(i) : behaviours;
-        let newDisplay = (display instanceof Function ) ? display(i) : display;
 
-        let newParticle = createParticle(
-            newPos, 
-            newDir,
-            newInertialMass,
-            newMomentInertia,
-            newMovement,
-            newVelocity,
-            newAngVelocity,
-            newMaxForce,
-            newMaxSpeed,
-            newMaxAngVel,
-            newTranslationDamping,
-            newRotationDamping,
-            newBehaviours,
-            newDisplay
-        );
+        let newParticle = createParticle({
+            position: (posGenerator instanceof Function ) ? posGenerator(i) : posGenerator, 
+            direction: (dirGenerator instanceof Function ) ? dirGenerator(i) : dirGenerator,
+            inertialMass: (inertialMass instanceof Function ) ? inertialMass(i) : inertialMass,
+            momentInertia: (momentInertia instanceof Function ) ? momentInertia(i) : momentInertia,
+            
+            movement: movement,
+
+            initialVelocity: (initialVelocity instanceof Function ) ? initialVelocity(i) : initialVelocity,
+            initialAngularVelocity: (initialAngularVelocity instanceof Function ) ? initialAngularVelocity(i) : initialAngularVelocity,
+
+            maxForce: (maxForce instanceof Function ) ? maxForce(i) : maxForce,
+            maxTorque: (maxTorque instanceof Function ) ? maxTorque(i) : maxTorque,
+            
+            maxSpeed:(maxSpeed instanceof Function ) ? maxSpeed(i) : maxSpeed,
+            maxAngVel: (maxAngVel instanceof Function ) ? maxAngVel(i) : maxAngVel,
+            translationDamping: (translationDamping instanceof Function ) ? translationDamping(i) : translationDamping,
+            rotationDamping: (rotationDamping instanceof Function ) ? rotationDamping(i) : rotationDamping,
+            behaviours: (behaviours instanceof Function ) ? behaviours(i) : behaviours,
+            display: (display instanceof Function ) ? display(i) : display
+        });
 
         self.particles.push(newParticle);
 
@@ -131,8 +122,8 @@ const createParticleSystem = function(
             for(let i =0; i < num; i++){
                 let range = circle(self.particles[i].x, self.particles[i].y, queryRadius);
                 let safeRange = circle(self.particles[i].x, self.particles[i].y, safeRadius);
-                let forMerge = self.quadTree.query(safeRange);
-                let inRange = self.quadTree.query(range);
+                let forMerge = self.collisionDetection.query(safeRange);
+                let inRange = self.collisionDetection.query(range);
                 
                 let indexThis = forMerge.indexOf(self.particles[i]);
                 if(indexThis > -1){
@@ -141,8 +132,8 @@ const createParticleSystem = function(
 
                 let agents = inRange.filter(x => !forMerge.includes(x) );
 
-                self.particles[i].body.applyForces(agents);
-                self.particles[i].body.move(); 
+                self.particles[i].applyForces(agents);
+                self.particles[i].move(); 
 
                 /*-------------------
                 ----Merging stuff----
@@ -151,7 +142,7 @@ const createParticleSystem = function(
                     let numMerge = forMerge.length;
 
                     for(let j=0; j<numMerge; j++){  
-                        self.particles[i].body.merge(forMerge[j]); //There is a problem here! Sebugg
+                        self.particles[i].merge(forMerge[j]); //There is a problem here! Sebugg
                         indexToRemove = self.particles.indexOf(forMerge[j]);
 
                         //delete the second particle from particles
@@ -165,7 +156,7 @@ const createParticleSystem = function(
 
                         //delete the second particle from quadTree
 
-                        self.quadTree.remove(forMerge[j]);
+                        self.collisionDetection.remove(forMerge[j]);
                     }
                 }
                 
@@ -174,20 +165,21 @@ const createParticleSystem = function(
 
             self.collisionDetection = quadTree(boundary, 8);
             for(let i=0; i<self.particles.length; i++){
-                self.collisionDetection(self.particles[i]);
+                self.collisionDetection.insert(self.particles[i]);
             }
         }
     };
 
     self.display = (
+        p5inst,
         particles = true,
         forces = false,
         direction = false
     ) => {
         for(p of self.particles){
-            particles ? p.display.show() : null;
-            forces ? p.display.force() : null;
-            direction ? p.display.direction() : null;
+            particles ? p.display.show(p5inst) : null;
+            forces ? p.display.force(p5inst) : null;
+            direction ? p.display.direction(p5inst) : null;
         }
     }
 

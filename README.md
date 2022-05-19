@@ -10,6 +10,11 @@ Please note that this is a ***work in progress project*** and there are a lot of
 [HERE]: https://www.paypal.com/donate/?hosted_button_id=C7659JA4NE4U6
 
 
+**TO DO**
+- Reimplement space hash 2d
+- Retest
+- update this documentation
+
 
 
 # Creating a particle system
@@ -30,7 +35,7 @@ Similarly, a function to generate each particle's initial facing direction (in c
 5. [inertialMass](#inertialMass): 
 The same for the mass of each particle.
 
-6. [momentInercia](#momentInercia): 
+6. [momentInertia](#momentInertia): 
 The same for the moment of inercia of each particle.
 
 7. [movement](#movement): 
@@ -115,7 +120,7 @@ const createParticleSystem = function({
     dirGenerator = (i)=>{ return vec().random2D()},
 
     inertialMass = (i)=>{return 1},
-    momentInercia = (i)=>{return 1000},
+    momentInertia = (i)=>{return 1000},
 
     movement = "dynamic",
 

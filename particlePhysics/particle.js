@@ -4,7 +4,7 @@
 -----------------------------------------------------------------
 -----------------------------------------------------------------*/
 
-const createParticle = function(
+const createParticle = function({
 
     position = vec(),
     direction = vec(0,-1),
@@ -12,8 +12,11 @@ const createParticle = function(
     momentInertia = 1000,
 
     movement = "static",
+    initialVelocity = vec(),
+    initialAngularVelocity = vec(),
 
-    maxForce = 20,
+    maxForce = 10,
+    maxTorque = 0.1,
 	maxSpeed = 0.1,
     maxAngVel = 0.3,
     translationDamping = 0.9,
@@ -54,22 +57,22 @@ const createParticle = function(
         displayDirectionDependencies: ["pos","dir"] //has to be in the same order than in the arguments
     }
 
-) {
+}={}) {
 
     const self = {
         pos: position,
         dir: direction,
         inertialMass,
-        momentInercia,
+        momentInertia,
         movement,
-        physics,
+        physics: {},
 
         get x () {
-            return this.body.pos.x
+            return this.pos.x
         },
 
         get y (){
-            return this.body.pos.y
+            return this.pos.y
         }
 
     }
@@ -77,6 +80,7 @@ const createParticle = function(
     /*
     BEHAVIOURS ASSIGNMENT
     */
+
     for (const behaviour of behaviours) {
         let behaviourName = behaviour.type;
         let factoryName = "create"+behaviourName.charAt(0).toUpperCase()+behaviourName.slice(1);
@@ -88,10 +92,10 @@ const createParticle = function(
     //the engine behind the dynamic type
     if(self.movement == 'dynamic'){
         //translation
-        self.vel = vec();
+        self.vel = initialVelocity;
         self.acl = vec();
         //rotation        
-        self.angvel = vec();
+        self.angvel = initialAngularVelocity;
         self.angacl = vec();
         
         self.applyForces = (agents) => {
@@ -100,9 +104,10 @@ const createParticle = function(
             }
         }
         
-        self.move = (p5inst) => {
+        self.move = () => {
 
             //translation - Euler - maybe implement runge kutta 4th?
+            self.acl.limit(maxForce/inertialMass);
             self.vel.add(self.acl);
             self.vel.mult(translationDamping); //translation damping
             self.vel.limit(maxSpeed);
@@ -111,7 +116,7 @@ const createParticle = function(
             self.acl.mult(0);
 
             //rotation
-            self.angacl.limit(maxForce);
+            self.angacl.limit(maxTorque/momentInertia);
             self.angvel.add(self.angacl);
             self.angvel.mult(rotationDamping); //rotational damping
             self.angvel.limit(maxAngVel);
@@ -133,7 +138,7 @@ const createParticle = function(
             let m1 = p1.inertialMass;
             let x1 = vec().copy(p1.pos);
             let v1 = vec().copy(p1.vel);
-            let I1 = p1.momentInercia;
+            let I1 = p1.momentInertia;
             let w1 = vec().copy(p1.angvel);
 
             let p2 = particleForMerge.body;
@@ -147,7 +152,7 @@ const createParticle = function(
             let v2 = vec().copy(p2.vel);
             let vcm = vec().copy(v1.mult(m1)).add(v2.mult(m2)).div(mcm);
             //4.moment od inercia
-            let I2 = p2.momentInercia;
+            let I2 = p2.momentInertia;
             let Icm = I1 + I2;
             //5.angular velocity
             let w2 = vec().copy(p2.angvel);
@@ -157,15 +162,13 @@ const createParticle = function(
             self.inertialMass = mcm;
             self.pos = vec().copy(xcm);
             self.vel = vec().copy(vcm);
-            self.momentInercia = Icm;
+            self.momentInertia = Icm;
             self.angvel = vec().copy(wcm);
 
             //notify the merge to all behaviours
             for(const f of behaviourKeys){
                 self[f].merge(particleForMerge[f]);
             }
-
-            //console.log(self); //debugg
         }
     }
 
@@ -188,6 +191,8 @@ const createParticle = function(
             }
             return context[lastDependency];
         });
+
+
 
         return display.displayFunction(args, self.display.scale, ...displayDependencies)
     }
@@ -224,7 +229,7 @@ const createParticle = function(
         return display.displayDirection(args, self.display.scale, ...displayDirectionDependencies)
     }
 
-
+ 
     return self;
 };
 
