@@ -154,6 +154,28 @@ const createParticleSystem = function({
 
                 self.particles[i].move(); 
 
+                /*-------------------------
+                ----fake wrapping stuff----
+                --------------------------*/
+                let bottomWall = self.boundary.y + self.boundary.height/2;
+                let topWall    = self.boundary.y - self.boundary.height/2;
+                let rightWall  = self.boundary.x + self.boundary.width/2;
+                let leftWall   = self.boundary.x - self.boundary.width/2;
+
+                if(wrap == "torus"){
+                    /*something is fishy here, why particles not changing pos when
+                    going through the right and bottom? */
+                    if(self.particles[i].pos.x >= rightWall ) self.particles[i].pos.x = leftWall;
+                    if(self.particles[i].pos.y >= bottomWall) self.particles[i].pos.y = topWall; 
+                    if(self.particles[i].pos.x <= leftWall  ) self.particles[i].pos.x = rightWall;
+                    if(self.particles[i].pos.y <= topWall   ) self.particles[i].pos.y = bottomWall;
+                } else if (wrap == "bounce"){
+                    if(self.particles[i].pos.x >= rightWall ) self.particles[i].vel.x *= -1;
+                    if(self.particles[i].pos.y >= bottomWall) self.particles[i].vel.y *= -1 ; 
+                    if(self.particles[i].pos.x <= leftWall  ) self.particles[i].vel.x *= -1 ;
+                    if(self.particles[i].pos.y <= topWall   ) self.particles[i].vel.y *= -1 ;
+                }
+
                 /*-------------------
                 ----Merging stuff----
                 --------------------*/

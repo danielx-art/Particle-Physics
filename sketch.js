@@ -6,9 +6,9 @@ var sketch = function(s){
 	let PAUSE = false;
 	let RECORDING = false;
 	let p;
-	let number = 100;
+	let number = 3;
 	let maxForce = 0.001;
-	let maxSpeed = 0.5;
+	let maxSpeed = 0.9;
 	let merge = false;
 	let stepsToDraw = 2;
 	let width;
@@ -30,12 +30,12 @@ var sketch = function(s){
 			,
 			movement: 'dynamic',
 			initialVelocity: (i) => {
-				//return vec().random2D(maxSpeed/5);
-				return vec();
+				return vec().random2D(maxSpeed);
+				//return vec();
 			},
 			maxForce,
 			maxSpeed,
-			queryRadius: 100,
+			queryRadius: 400,
 			safeRadius: 20, //bug
 			merge,
 			behaviours: (i)=>{return[
@@ -66,7 +66,7 @@ var sketch = function(s){
 		//s.ellipse(pcanvas.width/2, pcanvas.height/2, 2, 2);
 		for(let k=0; k<stepsToDraw; k++){
 			p.update();
-			p.display(s, true, true);
+			p.display(s);
 			p.move();
 			p.collisionDetection.show(s);
 		}
