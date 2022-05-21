@@ -5,28 +5,30 @@ const rectangle = function(x,y,width,height,) {
         y,
         width,
         height,
-        center: {
-            x: x + width/2,
-            y: y + height/2
-        }
     }
 
     self.contains = function(point){
         return (
-        point.x >= self.x &&
-        point.x <= self.x + self.w &&
-        point.y >= self.y &&
-        point.y <= self.y + self.h
+        point.x >= self.x - self.width/2  &&
+        point.x <= self.x + self.width/2  &&
+        point.y >= self.y - self.height/2 &&
+        point.y <= self.y + self.height/2
         );
     }
 
     self.intersects = function(range) {
         return !(
-        range.center.x - range.width/2 > this.center.x + this.width/2   ||
-        range.center.x + range.width/2 < this.center.x - this.width/2   ||
-        range.center.y - range.heigth/2 > this.center.y + this.heigth/2 ||
-        range.center.y + range.heigth/2 < this.center.y - this.heigth/2
+        range.x - range.width/2 > this.x + this.width/2   ||
+        range.x + range.width/2 < this.x - this.width/2   ||
+        range.y - range.heigth/2 > this.y + this.heigth/2 ||
+        range.y + range.heigth/2 < this.y - this.heigth/2
         );
+    }
+
+    self.show =function(p5inst, color = 200) {
+        p5inst.noFill();
+        p5inst.stroke(color);
+        p5inst.rect(self.x - self.width/2, self.y - self.height/2, self.width, self.height);
     }
 
     return self;
@@ -39,9 +41,6 @@ const circle = function(x, y, r) {
         x,
         y,
         r,
-        get center(){
-            return {x, y}
-        },
         get width(){
             return 2*r;
         },
@@ -59,8 +58,8 @@ const circle = function(x, y, r) {
     }
 
     self.intersects = function(range) {
-        var xDist = Math.abs(range.center.x - self.center.x);
-        var yDist = Math.abs(range.center.y - self.center.y);
+        var xDist = Math.abs(range.x - self.x);
+        var yDist = Math.abs(range.y - self.y);
 
         var r = self.r;
 
@@ -77,6 +76,12 @@ const circle = function(x, y, r) {
 
         // intersection on the edge of the circle
         return edges <= self.r*self.r;
+    }
+
+    self.show =function(p5inst, color = 200) {
+        p5inst.noFill();
+        p5inst.stroke(color);
+        p5inst.ellipse(self.x, self.y, self.width, self.height);
     }
 
     return self;
@@ -116,6 +121,7 @@ function executeFunctionByName(functionName, context /*, args */) {
     var args = Array.prototype.slice.call(arguments, 2);
     var namespaces = functionName.split(".");
     var func = namespaces.pop();
+    
     //get deeper into nested contexts
     for (var i = 0; i < namespaces.length; i++) {
         context = context[namespaces[i]];

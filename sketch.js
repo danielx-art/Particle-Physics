@@ -6,11 +6,11 @@ var sketch = function(s){
 	let PAUSE = false;
 	let RECORDING = false;
 	let p;
-	let number = 6;
-	let maxForce = 10;
+	let number = 100;
+	let maxForce = 0.001;
 	let maxSpeed = 0.5;
 	let merge = false;
-	let stepsToDraw = 5;
+	let stepsToDraw = 2;
 	let width;
 	let height;
 	let displayRadi = 3;
@@ -24,34 +24,34 @@ var sketch = function(s){
 
 		p = createParticleSystem({
 			num: number,
-			boundary: rectangle(0.1*width,0.1*height,0.8*width, 0.8*height),
+			boundary: rectangle(width/2,height/2,0.6*width, 0.6*height),
 			posGenerator: 
-				putIndexOnEvenGrid(number, 0.8*height, 0.8*width, 0.1*width, 0.1*height)
+				putIndexOnEvenGrid(number, 0.55*height, 0.55*width, 0.26*width, 0.225*height)
 			,
 			movement: 'dynamic',
 			initialVelocity: (i) => {
-				return vec().random2D(maxSpeed/5);
+				//return vec().random2D(maxSpeed/5);
+				return vec();
 			},
 			maxForce,
 			maxSpeed,
-			queryRadius: 60,
+			queryRadius: 100,
 			safeRadius: 20, //bug
 			merge,
 			behaviours: (i)=>{return[
-				// {
-				// 	type:'gravity',
-				// 	G: 70,
-				// 	safeRadius: 10
-				// }
+				{
+					type:'gravity',
+					G: 90,
+				}
 				// ,
 			]},
-			display: (i) => {return {
-				scale: displayRadi, 
-				displayFunction: (s, radius, pos) => {
-					s.ellipse(pos.x, pos.y, radius, radius);
-				},
-				displayDependencies: ["pos"]
-			}}
+			// display: (i) => {return {
+			// 	scale: displayRadi, 
+			// 	displayFunction: (s, radius, pos) => {
+			// 		s.ellipse(pos.x, pos.y, radius, radius);
+			// 	},
+			// 	displayDependencies: ["pos"]
+			// }}
 		});
 
 	};
@@ -66,8 +66,13 @@ var sketch = function(s){
 		//s.ellipse(pcanvas.width/2, pcanvas.height/2, 2, 2);
 		for(let k=0; k<stepsToDraw; k++){
 			p.update();
-			p.display(s);
+			p.display(s, true, true);
+			p.move();
+			p.collisionDetection.show(s);
 		}
+
+		//testing
+		//s.noLoop();
 
 		//IF PAUSED DO NOT RECORD
 		if(!PAUSE && RECORDING){

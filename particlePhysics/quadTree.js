@@ -23,16 +23,16 @@ const quadTree = function(boundary, capacity) {
     self.subdivide = function() {
         let x = self.boundary.x;
         let y = self.boundary.y;
-        let w = self.boundary.w / 2;
-        let h = self.boundary.h / 2;
+        let w = self.boundary.width / 2;
+        let h = self.boundary.height / 2;
 
-        let ne = rectangle(x + w, y - h, w, h);
+        let ne = rectangle(x + w/2, y - h/2, w, h);
         self.northeast = quadTree(ne, self.capacity);
-        let nw = rectangle(x - w, y - h, w, h);
+        let nw = rectangle(x - w/2, y - h/2, w, h);
         self.northwest = quadTree(nw, self.capacity);
-        let se = rectangle(x + w, y + h, w, h);
+        let se = rectangle(x + w/2, y + h/2, w, h);
         self.southeast = quadTree(se, self.capacity);
-        let sw = rectangle(x - w, y + h, w, h);
+        let sw = rectangle(x - w/2, y + h/2, w, h);
         self.southwest = quadTree(sw, self.capacity);
 
         self.divided = true;
@@ -40,11 +40,14 @@ const quadTree = function(boundary, capacity) {
 
     self.insert = function(point) {
         if (!self.boundary.contains(point)) {
+            //console.log(self.boundary);
+            //console.log("point not contained in boundary") //debugg
             return false;
         }
 
         if (self.points.length < self.capacity) {
             self.points.push(point);
+            //console.log("point "+point.x, point.y+" inserted") //debugg
             return true;
         }
 
@@ -58,6 +61,7 @@ const quadTree = function(boundary, capacity) {
             self.southeast.insert(point) ||
             self.southwest.insert(point)
         ) {
+            //console.log(self.count()); //debugg
             return true;
         }
     }
@@ -87,6 +91,7 @@ const quadTree = function(boundary, capacity) {
     }
 
     self.remove = function(point) {
+        console.log("being removed"); //debugg
         let indexToRemove = self.points.indexOf(point);
         if(indexToRemove> -1){
             self.points.splice(indexToRemove,1);
@@ -100,6 +105,24 @@ const quadTree = function(boundary, capacity) {
             }
         }
         return false;
+    }
+
+    self.count = function() {
+        let count = self.points.length;
+        if(self.divided){
+            count += self.northeast.count() + self.northwest.count() + self.southeast.count() + self.southwest.count();
+        }
+        return count;
+    }
+
+    self.show = function(p5inst) {
+        self.boundary.show(p5inst);
+        if(self.divided) {
+            self.northwest.show(p5inst);
+            self.northeast.show(p5inst);
+            self.southwest.show(p5inst);
+            self.southeast.show(p5inst);
+        }
     }
 
     return self;

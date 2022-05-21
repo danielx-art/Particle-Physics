@@ -1,8 +1,8 @@
 
-const createGravity = (
+var createGravity = function(
     particle,
     G=10
-    ) => {
+    ) {
 
     const self = {
         
@@ -35,7 +35,6 @@ const createGravity = (
                 }
 
                 let g = agent.physics.gravity.field(particle.pos);
-
                 let Fg = g.mult(particle.inertialMass);
                 Fgres.add(Fg);
 

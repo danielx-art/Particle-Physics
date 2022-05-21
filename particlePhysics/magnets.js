@@ -1,8 +1,8 @@
-const createMagnet = (
+var createMagnet = function(
     particle,
     mdipole,
     mdipoleDependencies
-    ) => {
+    ) {
 
     if (mdipole instanceof Function) {
         let args = mdipoleDependencies.map((dependency)=>particle[dependency]);

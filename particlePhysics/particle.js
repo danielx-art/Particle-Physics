@@ -38,19 +38,21 @@ const createParticle = function({
     display = {
         scale: 10, 
         displayFunction: (p5instance, radius, pos) => {
+            p5instance.noStroke();
+            p5instance.fill(255);
             p5instance.ellipse(pos.x, pos.y, radius, radius);
         },
         displayDependencies: ["pos"],
 
         displayForce: (p5instance, scale, pos, inertialMass, acl) => {
-            p5instance.stroke(0);
+            p5instance.stroke(255,0,0);
             let aclTemp = vec().copy(acl).mult(scale/inertialMass);
             p5instance.line(pos.x, pos.y, pos.x + aclTemp.x, pos.y + aclTemp.y)
         },
         displayForceDependencies: ["pos","inertialMass","acl"], //has to be in the same order than in the arguments
 
         displayDirection: (p5instance, scale, pos, dir) => {
-            p5instance.stroke(10);
+            p5instance.stroke(10,50,20);
             let dirTemp = vec().copy(dir).mult(scale);
             p5instance.line(pos.x, pos.y, pos.x + dirTemp.x, pos.y + dirTemp.y)
         },
@@ -100,7 +102,7 @@ const createParticle = function({
         
         self.applyForces = (agents) => {
             for(const f of behaviourKeys){
-                self[f].forces(agents);
+                self.physics[f].forces(agents);
             }
         }
         
@@ -109,7 +111,7 @@ const createParticle = function({
             //translation - Euler - maybe implement runge kutta 4th?
             self.acl.limit(maxForce/inertialMass);
             self.vel.add(self.acl);
-            self.vel.mult(translationDamping); //translation damping
+            self.vel.mult(translationDamping);
             self.vel.limit(maxSpeed);
 
             self.pos.add(self.vel);
@@ -118,7 +120,7 @@ const createParticle = function({
             //rotation
             self.angacl.limit(maxTorque/momentInertia);
             self.angvel.add(self.angacl);
-            self.angvel.mult(rotationDamping); //rotational damping
+            self.angvel.mult(rotationDamping)
             self.angvel.limit(maxAngVel);
             deltadir = self.angvel.cross(self.dir);
             self.dir.add(deltadir).limit(1);
@@ -126,7 +128,7 @@ const createParticle = function({
             
             //notify all behaviours
             for(const f of behaviourKeys){
-                self[f].hasMoved(self);
+                self.physics[f].hasMoved(self);
             }
         }
 

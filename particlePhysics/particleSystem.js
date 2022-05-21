@@ -19,14 +19,14 @@ const createParticleSystem = function({
     maxTorque = (i)=>{return 0.5},
     maxSpeed = (i)=>{return 0.1},
     maxAngVel = (i)=>{return 0.1},
-    translationDamping = (i)=>{return 0},
-    rotationDamping = (i)=>{return 0},
+    translationDamping = (i)=>{return 1},
+    rotationDamping = (i)=>{return 1},
 
     wrap = "torus",
 
     collisionDetection = 'QUADTREE',
 
-    queryRadius = 50,
+    queryRadius = 500,
 
     safeRadius = 5,
 
@@ -40,25 +40,28 @@ const createParticleSystem = function({
 
     display = (i) => {
         return {
-            scale: 10, 
+            scale: 5, 
             displayFunction: (p5instance, radius, pos) => {
+                p5instance.noStroke();
+                p5instance.fill(255);
                 p5instance.ellipse(pos.x, pos.y, radius, radius);
             },
             displayDependencies: ["pos"],
     
             displayForce: (p5instance, scale, pos, inertialMass, acl) => {
-                p5instance.stroke(0);
-                let aclTemp = vec().copy(acl).mult(scale/inertialMass);
+                p5instance.stroke(255,0,0);
+                let aclTemp = vec().copy(acl).mult(10*scale/inertialMass);
+                aclTemp.mag() != 0 ? aclTemp.setMag(Math.log(aclTemp.mag())+5) : null;
                 p5instance.line(pos.x, pos.y, pos.x + aclTemp.x, pos.y + aclTemp.y)
             },
             displayForceDependencies: ["pos","inertialMass","acl"], //has to be in the same order than in the arguments
     
             displayDirection: (p5instance, scale, pos, dir) => {
-                p5instance.stroke(10);
+                p5instance.stroke(10,50,20);
                 let dirTemp = vec().copy(dir).mult(scale);
                 p5instance.line(pos.x, pos.y, pos.x + dirTemp.x, pos.y + dirTemp.y)
             },
-            displayDirectionDependencies: ["pos","dir"] //has to be in the same order than in the arguments
+            displayDirectionDependencies: ["pos","dir"]
         }
     },
 
@@ -76,7 +79,6 @@ const createParticleSystem = function({
     }
 
     for(let i=0; i<num; i++){
-        
 
         let newParticle = createParticle({
             position: (posGenerator instanceof Function ) ? posGenerator(i) : posGenerator, 
@@ -120,19 +122,42 @@ const createParticleSystem = function({
 
         if(movement == 'dynamic'){
             for(let i =0; i < num; i++){
+                /*
+                this makes particles out of the boundary detect particles inside the boundary but not vice-versa, 
+                because this loop go trough all particles but not all particles are registered in the quadtree
+                */
                 let range = circle(self.particles[i].x, self.particles[i].y, queryRadius);
                 let safeRange = circle(self.particles[i].x, self.particles[i].y, safeRadius);
                 let forMerge = self.collisionDetection.query(safeRange);
                 let inRange = self.collisionDetection.query(range);
-                
+                let indexThis = forMerge.indexOf(self.particles[i]);
+                if(indexThis > -1){
+                    forMerge.splice(indexThis, 1); 
+                    
+                    let agents = inRange.filter(x => !forMerge.includes(x) );
+
+                    self.particles[i].applyForces(agents);
+                }
+            }
+        }
+    };
+
+
+    //interactions
+    self.move = (
+
+    ) => {
+
+        if(movement == 'dynamic'){
+            for(let i =0; i < num; i++){
+                let safeRange = circle(self.particles[i].x, self.particles[i].y, safeRadius);
+                let forMerge = self.collisionDetection.query(safeRange);
                 let indexThis = forMerge.indexOf(self.particles[i]);
                 if(indexThis > -1){
                     forMerge.splice(indexThis, 1); 
                 }
+                
 
-                let agents = inRange.filter(x => !forMerge.includes(x) );
-
-                self.particles[i].applyForces(agents);
                 self.particles[i].move(); 
 
                 /*-------------------
