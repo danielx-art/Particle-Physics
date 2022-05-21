@@ -22,7 +22,7 @@ const createParticleSystem = function({
     translationDamping = (i)=>{return 1},
     rotationDamping = (i)=>{return 1},
 
-    wrap = "torus",
+    wrap = "bounce",
 
     collisionDetection = 'QUADTREE',
 
@@ -165,10 +165,10 @@ const createParticleSystem = function({
                 if(wrap == "torus"){
                     /*something is fishy here, why particles not changing pos when
                     going through the right and bottom? */
-                    if(self.particles[i].pos.x >= rightWall ) self.particles[i].pos.x = leftWall;
-                    if(self.particles[i].pos.y >= bottomWall) self.particles[i].pos.y = topWall; 
-                    if(self.particles[i].pos.x <= leftWall  ) self.particles[i].pos.x = rightWall;
-                    if(self.particles[i].pos.y <= topWall   ) self.particles[i].pos.y = bottomWall;
+                    if(self.particles[i].pos.x >= rightWall ) self.particles[i].pos.x = leftWall+1;
+                    if(self.particles[i].pos.y >= bottomWall) self.particles[i].pos.y = topWall+1; 
+                    if(self.particles[i].pos.x <= leftWall  ) self.particles[i].pos.x = rightWall-1;
+                    if(self.particles[i].pos.y <= topWall   ) self.particles[i].pos.y = bottomWall-1;
                 } else if (wrap == "bounce"){
                     if(self.particles[i].pos.x >= rightWall ) self.particles[i].vel.x *= -1;
                     if(self.particles[i].pos.y >= bottomWall) self.particles[i].vel.y *= -1 ; 
