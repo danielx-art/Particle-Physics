@@ -122,20 +122,14 @@ const createParticleSystem = function({
 
         if(movement == 'dynamic'){
             for(let i =0; i < num; i++){
-                /*
-                this makes particles out of the boundary detect particles inside the boundary but not vice-versa, 
-                because this loop go trough all particles but not all particles are registered in the quadtree
-                */
-                let range = circle(self.particles[i].x, self.particles[i].y, queryRadius);
                 let safeRange = circle(self.particles[i].x, self.particles[i].y, safeRadius);
                 let forMerge = self.collisionDetection.query(safeRange);
-                let inRange = self.collisionDetection.query(range);
                 let indexThis = forMerge.indexOf(self.particles[i]);
                 if(indexThis > -1){
+                    let range = circle(self.particles[i].x, self.particles[i].y, queryRadius);
+                    let inRange = self.collisionDetection.query(range);
                     forMerge.splice(indexThis, 1); 
-                    
                     let agents = inRange.filter(x => !forMerge.includes(x) );
-
                     self.particles[i].applyForces(agents);
                 }
             }
@@ -143,7 +137,7 @@ const createParticleSystem = function({
     };
 
 
-    //interactions
+    //move
     self.move = (
 
     ) => {
