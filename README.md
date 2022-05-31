@@ -10,12 +10,41 @@ Please note that this is a ***work in progress project*** and there are a lot of
 [HERE]: https://www.paypal.com/donate/?hosted_button_id=C7659JA4NE4U6
 
 
-**TO DO**
-- Reimplement space hash 2d
-- Retest
-- update this documentation
+## **OBJECTIVES**
+My goal here is to create a base code in wich one could easily create a particle system in wich one can:
+1. create the particles in a system or individually
+2. give each particle customized physics behaviours that we can fully design from scratch and that are not necessarily something that actually exists in the real world.
+3. let the particles exist in a virtual space that does NOT need to be the rectangular space of the canvas, a space equipped its own geometry/topology (and distance formula) that can eventually (in the final steps) be mapped into the retangular space of the canvas for us to visualzie. 
+    - this geometry can be bounded, polygonal, in wich the particles could collide and bounce with a specific elasticity
+    - this geometry can be closed in itself in a higher dimension, enclosing a volume, in wich the particles can go "around", for example a torus, a sphere or an amoeba shape.
+    - this geometry can be opened and infinite, in wich particles can go so far as to not be shown on the canvas, or in wich particles at "Infinity" would be located in the borders of the canvas asymptotically (at the limit).
+4. detect collisions between particles (in the specified geometry) with reasonable speed and physical accuracy (my goal is for it to be able to handle a million particles like a kinectic fluid simulation if I want to)
+5. organize particles in graphs in order to customize behaviours even more by detecting connected particles and so on
+6. customize how the particles will be shown (a circle, a shape, an image or make them invisible)
+7. vizualise ***EVERYTHING***:
+    - trace particles trajectories
+    - draw force vector fields and tendencies
+    - draw connections between particles
+    - see collision detection algorythims at work
+    - color pixels or regions of the canvas based on particles properties or mean values, such as temperature, density, velocity etc
 
+## **ALGORITHMS AND IDEAS FOR FURTHER IMPLEMENTATION** (*or how to overcomplicate things*)
+1. option of quadtree (or k-tree) for collision detection between particles (O(n.log(n))) ***OR*** space hashing, in wich we divide the particles' space in cells and search for interactions or collisions of a particle only in specified cells for example in neighbour cells within a certain distance from the mentioned particle.
+2. GJK algorithm for detecting polygon intersection, wich can be useful for:
+    - customize querying shapes for particle detection of interactions with others
+    - implementing custom interactions and collisions between different particle systems, maybe
+3. Implement substepping for optimizing accuracy, dividing the frame into sub calculations.
+4. Implement helper functions to sort arrays (like distances from a particle and the particles in its query region or the velocities off all particles etc). 
+This would be useful for designing springs, clocth simulations or solf bodies  and the better algorithm here would probably be Tim Sort.
+5. Implement a particle's life time, in wich it is destroied after some time (and maybe also introduce some variance trough an error property as well) and then maybe recreated (using the same initial properties?)
+6. Maybe implement a "source", or a region in wich the particles will be generated -> This could be done via the generator of initial positions and velocities, so maybe just create some helper functions to use as prebuilt parameters. 
 
+## TODO (for developers use only)
+
+- Reimplement the space hash algorithm
+- prebuilt some helper functions to generate initial positions
+- let the particle system have the option to get the number from the initial positions generator
+- check and update the tracing mekanisms
 
 # Creating a particle system
 

@@ -7,8 +7,8 @@ var sketch = function(s){
 	let RECORDING = false;
 	let p;
 	let number = 3;
-	let maxForce = 0.001;
-	let maxSpeed = 0.9;
+	let maxForce = 0.005;
+	let maxSpeed = 0.4;
 	let merge = false;
 	let stepsToDraw = 2;
 	let width;

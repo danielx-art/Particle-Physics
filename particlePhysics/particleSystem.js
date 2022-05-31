@@ -78,6 +78,12 @@ const createParticleSystem = function({
         particles: [],
     }
 
+    /* initial positions should be a special thing outside the new particle, 
+    in wich the number of particles can be calculated if not specified 
+    maybe it can be the index function or an object wich gives an array of positions 
+    and the length of the array is the number of particles*/
+
+
     for(let i=0; i<num; i++){
 
         let newParticle = createParticle({
