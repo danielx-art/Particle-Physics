@@ -1,71 +1,31 @@
-const createParticleSystem = function({
-    
-    num = 1,
+import { defaultSystemParameters } from "./default_parameters";
 
-    boundary = rectangle(0,0,720,720),
+const createParticleSystem = function(args = {}) {
 
-    posGenerator = (i)=>{ return vec(Math.random()*(boundary.width-200)+100, Math.random()*(boundary.height-200)+100) },
-
-    dirGenerator = (i)=>{ return vec().random2D()},
-
-    inertialMass = (i)=>{return 1},
-    momentInertia = (i)=>{return 1000},
-
-    movement = "dynamic",
-
-    initialVelocity = (i) => {return vec()},
-    initialAngularVelocity = (i) => {return vec()},
-    maxForce = (i)=>{return 10},
-    maxTorque = (i)=>{return 0.5},
-    maxSpeed = (i)=>{return 0.1},
-    maxAngVel = (i)=>{return 0.1},
-    translationDamping = (i)=>{return 1},
-    rotationDamping = (i)=>{return 1},
-
-    wrap = "bounce",
-
-    collisionDetection = 'QUADTREE',
-
-    queryRadius = 500,
-
-    safeRadius = 5,
-
-    merge = false,
-
-    behaviours = (i) => {return [{
-        type: 'externalForce',
-        intensity: 10,
-        field: () => {return vec(0,1)} //just a constant vertical gravity
-    }]},
-
-    display = (i) => {
-        return {
-            scale: 5, 
-            displayFunction: (p5instance, radius, pos) => {
-                p5instance.noStroke();
-                p5instance.fill(255);
-                p5instance.ellipse(pos.x, pos.y, radius, radius);
-            },
-            displayDependencies: ["pos"],
-    
-            displayForce: (p5instance, scale, pos, inertialMass, acl) => {
-                p5instance.stroke(255,0,0);
-                let aclTemp = vec().copy(acl).mult(10*scale/inertialMass);
-                aclTemp.mag() != 0 ? aclTemp.setMag(Math.log(aclTemp.mag())+5) : null;
-                p5instance.line(pos.x, pos.y, pos.x + aclTemp.x, pos.y + aclTemp.y)
-            },
-            displayForceDependencies: ["pos","inertialMass","acl"], //has to be in the same order than in the arguments
-    
-            displayDirection: (p5instance, scale, pos, dir) => {
-                p5instance.stroke(10,50,20);
-                let dirTemp = vec().copy(dir).mult(scale);
-                p5instance.line(pos.x, pos.y, pos.x + dirTemp.x, pos.y + dirTemp.y)
-            },
-            displayDirectionDependencies: ["pos","dir"]
-        }
-    },
-
-}={}) {
+    const {
+        num, 
+        boundary, 
+        posGenerator, 
+        dirGenerator, 
+        inertialMass, 
+        momentInertia, 
+        movement, 
+        initialVelocity, 
+        initialAngularVelocity, 
+        maxForce,
+        maxTorque, 
+        maxSpeed, 
+        maxAngVel, 
+        translationDamping, 
+        rotationDamping, 
+        wrap, 
+        collisionDetection, 
+        queryRadius, 
+        safeRadius, 
+        merge, 
+        behaviours, 
+        display
+    } = {...defaultSystemParameters, ...args};
 
     //Initialize all the particles
     const self = {
@@ -78,34 +38,36 @@ const createParticleSystem = function({
         particles: [],
     }
 
-    /* initial positions should be a special thing outside the new particle, 
-    in wich the number of particles can be calculated if not specified 
-    maybe it can be the index function or an object wich gives an array of positions 
-    and the length of the array is the number of particles*/
-
-
     for(let i=0; i<num; i++){
 
+        function FUNC_ARRAY_VALUE(func, arg) {
+            return func instanceof Function ? 
+            func(arg) :
+            Array.isArray(func) ? 
+            func[arg] :
+            func
+        }
+
         let newParticle = createParticle({
-            position: (posGenerator instanceof Function ) ? posGenerator(i) : posGenerator, 
-            direction: (dirGenerator instanceof Function ) ? dirGenerator(i) : dirGenerator,
-            inertialMass: (inertialMass instanceof Function ) ? inertialMass(i) : inertialMass,
-            momentInertia: (momentInertia instanceof Function ) ? momentInertia(i) : momentInertia,
+            position: FUNC_ARRAY_VALUE(posGenerator, i), 
+            direction:  FUNC_ARRAY_VALUE(dirGenerator, i),
+            inertialMass:  FUNC_ARRAY_VALUE(inertialMass, i), 
+            momentInertia:  FUNC_ARRAY_VALUE(momentInertia, i), 
             
-            movement: movement,
+            movement: FUNC_ARRAY_VALUE(movement, i),
 
-            initialVelocity: (initialVelocity instanceof Function ) ? initialVelocity(i) : initialVelocity,
-            initialAngularVelocity: (initialAngularVelocity instanceof Function ) ? initialAngularVelocity(i) : initialAngularVelocity,
+            initialVelocity:  FUNC_ARRAY_VALUE(initialVelocity, i),
+            initialAngularVelocity:  FUNC_ARRAY_VALUE(initialAngularVelocity, i),
 
-            maxForce: (maxForce instanceof Function ) ? maxForce(i) : maxForce,
-            maxTorque: (maxTorque instanceof Function ) ? maxTorque(i) : maxTorque,
+            maxForce:  FUNC_ARRAY_VALUE(maxForce, i),
+            maxTorque:  FUNC_ARRAY_VALUE(maxTorque, i),
             
-            maxSpeed:(maxSpeed instanceof Function ) ? maxSpeed(i) : maxSpeed,
-            maxAngVel: (maxAngVel instanceof Function ) ? maxAngVel(i) : maxAngVel,
-            translationDamping: (translationDamping instanceof Function ) ? translationDamping(i) : translationDamping,
-            rotationDamping: (rotationDamping instanceof Function ) ? rotationDamping(i) : rotationDamping,
-            behaviours: (behaviours instanceof Function ) ? behaviours(i) : behaviours,
-            display: (display instanceof Function ) ? display(i) : display
+            maxSpeed: FUNC_ARRAY_VALUE(maxSpeed, i),
+            maxAngVel:  FUNC_ARRAY_VALUE(maxAngVel, i),
+            translationDamping:  FUNC_ARRAY_VALUE(translationDamping, i),
+            rotationDamping:  FUNC_ARRAY_VALUE(rotationDamping, i),
+            behaviours:  FUNC_ARRAY_VALUE(behaviours, i),
+            display:  FUNC_ARRAY_VALUE(display, i), 
         });
 
         self.particles.push(newParticle);
