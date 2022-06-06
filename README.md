@@ -9,25 +9,37 @@ Please note that this is a ***work in progress project*** and there are a lot of
 
 [HERE]: https://www.paypal.com/donate/?hosted_button_id=C7659JA4NE4U6
 
+## **GENERAL OBJECTIVES AND NOT**
 
-## **OBJECTIVES**
+- Build a simple and easy way to create and manage a virtual particle system. 
+- Build a sistematic way to design and custom your own physical behaviour from scratch, instead of using just pre  built ones that simulate actual real physics, like gravity or electrostatic forces.
+- **Not** implement the drawing on the canvas html object, this can be done via other libraries such as [p5.js] and [TREE.js].
+- **Not** build a game engine.
+- Learn some stuff, make some art and have **FUN**!
+
+
+[p5.js]: https://p5js.org/
+[TREE.js]: https://threejs.org/
+
+
+## **SPECIFIC OBJECTIVES**
 My goal here is to create a base code in wich one could easily create a particle system in wich one can:
-1. create the particles in a system or individually
-2. give each particle customized physics behaviours that we can fully design from scratch and that are not necessarily something that actually exists in the real world.
-3. let the particles exist in a virtual space that does NOT need to be the rectangular space of the canvas, a space equipped with its own geometry/topology (and distance formula) that can eventually (in the final steps) be mapped into the retangular space of the canvas for us to visualzie. 
+- create the particles in a system or individually
+- give each particle a list of physical behaviours that it will interact trough.
+- build the basis of a physical behaviour that one can populate with its own laws and "physics"
+- let the particles exist in a virtual space that does NOT need to be the rectangular space of the canvas, a space equipped with its own geometry/topology (and distance formula) that can eventually (in the final steps) be mapped into the retangular space of the canvas for us to visualzie. 
     - this geometry can be bounded, polygonal, in wich the particles can collide and bounce with a specific elasticity
     - this geometry can be closed onto itself in a higher dimension, enclosing a volume, such that particles can go "around" it, as for example on a torus, on a sphere or on an amoeba shaped thing.
     - this geometry can be opened and infinite so the particles either can go so far as to not be shown on the canvas, or alternatively be located at the borders of the canvas asymptotically (at the limit) as they approach "Infinity".
-4. detect collisions between particles (in the specified geometry) with reasonable speed and physical accuracy (my goal is for it to be able to handle a million particles like a kinectic fluid simulation if I want to)
-5. organize particles in graphs in order to customize behaviours even more by detecting connected particles and so on
-6. customize how the particles will be shown (a circle, a shape, an image or make them invisible)
-7. vizualise ***EVERYTHING***:
+- detect collisions between particles (in the specified geometry) with reasonable speed and physical accuracy (my goal is for it to be able to handle a million particles like a kinectic fluid simulation if I want to)
+- organize particles in graphs in order to customize behaviours even more by detecting connected particles and so on
+- customize how the particles will be shown (a circle, a shape, an image or make them invisible)
+- vizualise ***EVERYTHING***:
     - trace particles trajectories
     - draw force vector fields and tendencies
     - draw connections between particles
     - see collision detection algorythims at work
     - color pixels or regions of the canvas based on particles properties or mean values, such as temperature, density, velocity etc
-8. Learn some stuff, make some art and have **FUN**!
 
 ## **ALGORITHMS AND IDEAS FOR FURTHER IMPLEMENTATION** (*or how to overcomplicate things*)
 - Implement Runge Kutta order 4 for solving dynamics

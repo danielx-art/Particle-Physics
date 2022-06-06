@@ -1,3 +1,13 @@
+/*
+Geometries Pseudo Code
+
+from geometry coords to canvas coords function
+
+from canvas coords to geometry coords function
+
+distance function
+*/
+
 export function euclidean () {
 
     r = function(pointA, pointB){

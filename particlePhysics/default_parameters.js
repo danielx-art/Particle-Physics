@@ -1,6 +1,6 @@
 export default defaultSystemParameters = {
     
-    num: 1,
+    num: 3,
 
     boundary: rectangle(0,0,720,720),
 
