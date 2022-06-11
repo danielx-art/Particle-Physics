@@ -59,7 +59,6 @@ This would be useful for designing springs, cloth simulations or soft bodies - t
 - prebuilt some helper functions to generate initial positions
 - let the particle system have the option to get the number from the initial positions generator
 - check and update the tracing mekanisms
-- abc
 
 # Creating a particle system
 
